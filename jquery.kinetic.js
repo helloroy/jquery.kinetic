@@ -73,7 +73,8 @@
       down: 'kinetic-decelerating-down',
       left: 'kinetic-decelerating-left',
       right: 'kinetic-decelerating-right'
-    }
+    },
+    singleDirection: false
   };
 
 
@@ -145,6 +146,7 @@
 
     this.velocity = 0;
     this.velocityY = 0;
+    this.direction = null;
 
     // make sure we reset everything when mouse up
     $(document)
@@ -270,6 +272,13 @@
             this.threshold = 0;
           }
         }
+        if(this.settings.singleDirection == true && this.direction == null){
+          if(Math.abs(this.xpos-clientX) > Math.abs(this.ypos-clientY)){
+            this.direction = 'x';
+          }else{
+            this.direction = 'y';
+          }
+        }
         if (this.elementFocused){
           $(this.elementFocused).blur();
           this.elementFocused = null;
@@ -282,8 +291,8 @@
         var scrollLeft = this.scrollLeft();
         var scrollTop = this.scrollTop();
 
-        this.scrollLeft(this.settings.x ? scrollLeft - movedX : scrollLeft);
-        this.scrollTop(this.settings.y ? scrollTop - movedY : scrollTop);
+        this.scrollLeft(this.settings.x && (this.settings.singleDirection == false || this.direction=='x') ? scrollLeft - movedX : scrollLeft);
+        this.scrollTop(this.settings.y && (this.settings.singleDirection == false || this.direction=='y') ? scrollTop - movedY : scrollTop);
 
         this.prevXPos = this.xpos;
         this.prevYPos = this.ypos;
@@ -402,9 +411,8 @@
     var scroller = $scroller[0];
     var self = this;
     var settings = self.settings;
-
     // set scrollLeft
-    if (settings.x && scroller.scrollWidth > 0){
+    if (settings.x && scroller.scrollWidth > 0 && (this.settings.singleDirection == false || this.direction=='x')){
       this.scrollLeft(this.scrollLeft() + this.velocity);
       if (Math.abs(this.velocity) > 0){
         this.velocity = settings.decelerate ?
@@ -415,7 +423,7 @@
     }
 
     // set scrollTop
-    if (settings.y && scroller.scrollHeight > 0){
+    if (settings.y && scroller.scrollHeight > 0 && (this.settings.singleDirection == false || this.direction=='y')){
       this.scrollTop(this.scrollTop() + this.velocityY);
       if (Math.abs(this.velocityY) > 0){
         this.velocityY = settings.decelerate ?
@@ -442,6 +450,7 @@
       }
     } else {
       self.stop();
+      this.direction = null;
     }
   };
 
@@ -545,4 +554,3 @@
   };
 
 }(window.jQuery || window.Zepto));
-
